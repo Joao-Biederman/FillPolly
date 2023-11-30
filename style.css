@@ -1,3 +1,13 @@
+:root {
+    --main-dark: #000022;
+    --main-light: #BFBDC1;
+    --main-accent: #095256;
+}
+
+body {
+    background-color: var(--main-dark);
+}
+
 canvas {
-    border: 1px solid #000;
+    border: 1px solid var(--main-light);
 }
