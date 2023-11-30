@@ -1,13 +1,30 @@
-:root {
-    --main-dark: #000022;
-    --main-light: #BFBDC1;
-    --main-accent: #095256;
-}
+:root,
+  :root.light{
+    --bg-color: #000022;
+    --elements-color: #BFBDC1;
+    --main-accent-color: #095256;
+  }
+
+  :root.dark{
+    --bg-color: #BFBDC1;
+    --elements-color: #000022;
+    --main-accent-color: #095256;
+  }
 
 body {
-    background-color: var(--main-dark);
+  background-color: var(--bg-color);
 }
 
 canvas {
-    border: 1px solid var(--main-light);
+  border: 1px solid var(--elements-color);
+}
+
+.theme-btn {
+  width: 3em;
+  height: 3em;
+  padding: 0.5em;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  background-color: var(--main-accent-color);
 }
