@@ -1,15 +1,12 @@
-:root,
-  :root.light{
-    --bg-color: #000022;
-    --elements-color: #BFBDC1;
-    --main-accent-color: #095256;
-  }
+:root{
+  --bg-color: #eae0d5;
+  --elements-color: #c6ac8f;
+  --main-accent-color: #22333b;
 
-  :root.dark{
-    --bg-color: #BFBDC1;
-    --elements-color: #000022;
-    --main-accent-color: #095256;
-  }
+  /* --bg-color: #0a0908;
+  --elements-color: #eae0d5;
+  --main-accent-color: #c6ac8f; */
+}
 
 body {
   background-color: var(--bg-color);
@@ -17,22 +14,72 @@ body {
 
 canvas {
   border: 1px solid var(--elements-color);
+  max-height: 800px;
+  max-width: 800px;
+  border-radius: 16px;
 }
 
-.theme-btn {
-  width: 3em;
-  height: 3em;
-  padding: 0.5em;
-  border-radius: 50%;
-  cursor: pointer;
-  border: none;
-  background-color: var(--main-accent-color);
+.canvas_options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.delete-btn {
-  width: 5em;
-  height:5em;
+.triangles-table {
+  display: flex;
+  justify-content: center;
+  height: 400px;
+  width: 520px;
+  overflow-y: scroll;
+  border: 4px solid var(--elements-color);
+  border-radius: 8px;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.triangles-table::-webkit-scrollbar {
+  display: none;
+}
+
+#delete-all-btn {
+  width: 100px;
+  height: 60px;
   padding: 0.5em;
   cursor: pointer
   border: none;
+}
+
+ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+}
+
+li {
+  display: grid;
+  grid-template-columns: 100px 100px 100px 100px 100px;
+  align-items: center;
+}
+
+.workspace {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  gap: 2rem;
+
+  overflow: hidden;
+
+  @media (max-width : 1380px) {
+    flex-direction: column;
+  }
+
+  padding:8px;
+}
+
+#delete-all-btn {
+  margin: 8px;
 }

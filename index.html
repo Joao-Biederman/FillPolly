@@ -1,25 +1,27 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
-  <title>Fill Polly</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Fill Polly</title>
 </head>
+
 <body>
-  <canvas id="fill_polly_canvas" width="800" height="700"></canvas>
-  <!-- <button class="theme-btn light" onclick="setTheme('light')" title="Light mode"></button> -->
-  <!-- <button class="theme-btn dark" onclick="setTheme('dark')" title="Dark mode"></button> -->
+    <div class="workspace">
+        <canvas id="fill_polly_canvas" width="800" height="800"></canvas>
+        <div class="canvas_options">
+            <div class="triangles-table">
+                <ul id="triangles">
 
-  <div class="toggle-container">
-    <button class="theme-btn" onclick="changeTheme()" title="Light mode"></button>
-    <button class="delete-btn" onclick="deleteFirst()">Delete first</button>
-    <button class="delete-btn" onclick="deleteAll()">Delete all</button>
-    <!-- <button class="theme-btn dark" onclick="setTheme('dark')" title="Dark mode"></button> -->
-  </div>
+                </ul>
+            </div>
+            <button id="delete-all-btn">Clear canvas</button>
+        </div>
+    </div>
 
-  
-  
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
+
 </html>
