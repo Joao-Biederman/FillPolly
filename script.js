@@ -38,12 +38,12 @@ function rgbToHex(color) {
 }
 
 function hexToRgb(hex) {
-  var bigint = parseInt(hex, 16);
-  var r = (bigint >> 16) & 255;
-  var g = (bigint >> 8) & 255;
-  var b = bigint & 255;
-
-  return (get_rgb(color = { r: r, g: g, b: b }));
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
 }
 
 
@@ -96,30 +96,56 @@ function add_to_triangle_list(triangle) {
   color0.value = rgbToHex(triangle.vertices[0].color);
   color0.addEventListener("change", change_color)
   color0.id = triangle_count;
+  color0.className = 0;
 
   let color1 = document.createElement("input");
   color1.type = "color";
   color1.value = rgbToHex(triangle.vertices[1].color);
-  color2.addEventListener("change", change_color)
-  color2.id = triangle_count;
+  color1.addEventListener("change", change_color)
+  color1.id = triangle_count;
+  color1.className = 1;
 
   let color2 = document.createElement("input");
   color2.type = "color";
   color2.value = rgbToHex(triangle.vertices[2].color);
   color2.addEventListener("change", change_color)
   color2.id = triangle_count;
+  color2.className = 2;
+
+  let color3 = document.createElement("input")
+  color3.type = "color";
+  color3.value = rgbToHex(triangle.edge_color);
+  color3.addEventListener("change", change_edge)
+  color3.id = triangle_count;
 
   li_triangle.setAttribute("id", triangle.id);
   li_triangle.innerHTML = `Triangle ${triangle.id}`;
   li_triangle.appendChild(color0);
   li_triangle.appendChild(color1);
   li_triangle.appendChild(color2);
+  li_triangle.appendChild(color3);
   li_triangle.appendChild(delete_button);
   triangle_list.appendChild(li_triangle);
 }
 
 function change_color(event) {
-  
+  triangles.forEach(triangle => {
+    if (triangle.id == event.target.id){
+      triangle.change_dot(hexToRgb(event.target.value), event.target.className);
+      redraw_canvas();
+      return
+    }
+  })
+}
+
+function change_edge(event) {
+  triangles.forEach(triangle => {
+    if (triangle.id == event.target.id){
+      triangle.set_edge_color(hexToRgb(event.target.value));
+      redraw_canvas();
+      return
+    }
+  })
 }
 
 function paint(x, y, color) {
@@ -135,7 +161,7 @@ class dot {
     this.color = random_color()
   }
 
-  set(color) {
+  set_color(color) {
     this.color = color;
     this.draw();
   }
@@ -152,7 +178,7 @@ class dot {
 class triangle {
   constructor(dot, id) {
     this.id = id;
-    this.edge_color = `rgb(000,000,000)`;
+    this.edge_color = {r: 0, g: 0, b: 0};
     this.vertices = [];
     this.minY = Number.POSITIVE_INFINITY;
     this.maxY = Number.NEGATIVE_INFINITY;
@@ -175,6 +201,13 @@ class triangle {
 
   change_dot(color, id) {
     this.vertices[id].set_color(color);
+  }
+
+  update_triangle(colors) {
+    for (let i = 0; i < 3; i++) {
+      this.change_dot(colors[i], i);
+    }
+    this.set_edge_color(colors[3]);
   }
 
   define_edges() {
@@ -220,7 +253,7 @@ class triangle {
   }
 
   draw_edges() {
-    context.strokeStyle = this.edge_color;
+    context.strokeStyle = get_rgb(this.edge_color);
     context.beginPath();
     context.moveTo(this.vertices[0].x, this.vertices[0].y);
     context.lineTo(this.vertices[1].x, this.vertices[1].y);
@@ -246,6 +279,7 @@ class triangle {
 
   fill_polly() {
     this.draw_dots();
+    this.draw_edges();
     for (let y = this.minY; y < this.maxY; y++) {
       this.intersection.set(y, [])
 
@@ -297,7 +331,7 @@ canvas.addEventListener("click", (event) => {
   }
   
   if (dots_count == 3) {
-    new_triangle.draw_edges();
+    // new_triangle.draw_edges();
     add_to_triangle_list(new_triangle);
     triangle_count++;
     dots_count = 0;
