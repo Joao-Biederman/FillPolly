@@ -94,14 +94,20 @@ function add_to_triangle_list(triangle) {
   let color0 = document.createElement("input");
   color0.type = "color";
   color0.value = rgbToHex(triangle.vertices[0].color);
+  color0.addEventListener("change", change_color)
+  color0.id = triangle_count;
 
   let color1 = document.createElement("input");
   color1.type = "color";
   color1.value = rgbToHex(triangle.vertices[1].color);
+  color2.addEventListener("change", change_color)
+  color2.id = triangle_count;
 
   let color2 = document.createElement("input");
   color2.type = "color";
   color2.value = rgbToHex(triangle.vertices[2].color);
+  color2.addEventListener("change", change_color)
+  color2.id = triangle_count;
 
   li_triangle.setAttribute("id", triangle.id);
   li_triangle.innerHTML = `Triangle ${triangle.id}`;
@@ -110,6 +116,10 @@ function add_to_triangle_list(triangle) {
   li_triangle.appendChild(color2);
   li_triangle.appendChild(delete_button);
   triangle_list.appendChild(li_triangle);
+}
+
+function change_color(event) {
+  
 }
 
 function paint(x, y, color) {
@@ -277,19 +287,19 @@ canvas.addEventListener("click", (event) => {
     new_triangle = new triangle(new_dot, triangle_count);
 
     dots_count++;
-    triangle_count++;
     return;
   }
-
+  
   if (dots_count !== 0) {
     new_triangle.add_dot(new_dot)
-
+    
     dots_count++;
   }
-
+  
   if (dots_count == 3) {
     new_triangle.draw_edges();
     add_to_triangle_list(new_triangle);
+    triangle_count++;
     dots_count = 0;
     return
   }
