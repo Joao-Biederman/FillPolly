@@ -1,4 +1,4 @@
-import type { Dot } from '../dot.ts'
+import type { Dot } from './dot.ts'
 import { Color } from "./color.ts";
 import { random_color } from './color.ts';
 
