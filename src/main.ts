@@ -1,15 +1,36 @@
-import toastr from 'toastr';
-import 'toastr/build/toastr.min.css';
+import './style.css'
 
-import { Dot } from "./dot.ts";
-import { Polygon } from "./polygon.ts";
-import type { Color } from "./color.ts";
-import { hexToRgb } from "./color.ts";
+// biome-ignore lint/style/noNonNullAssertion: <explanation>
+document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
+   <div class="workspace">
+        <canvas id="fill_polly_canvas" width="600" height="600"></canvas>
+        <div class="canvas_options">
+            <div class="polygons-table">
+                <ul id="polygons">
 
-const canvas = document.getElementById('fill_polly_canvas');
+                </ul>
+            </div>
+            <div class="btn-div">
+                <button id="delete-all-btn" class="btn">Clear canvas</button>
+                <button id="creat-poly-btn" class="btn">Create Polygon</button>
+            </div>
+        </div>
+    </div>
+`
+import { Dot } from "./Script/dot.ts";
+import { Polygon } from "./Script/polygon.ts";
+import { hexToRgb } from "./Script/color.ts";
+
+import { Notyf } from 'notyf';
+import 'notyf/notyf.min.css'; // Import the Notyf CSS
+
+const notyf = new Notyf();
+
+const canvas = document.getElementById('fill_polly_canvas') as HTMLCanvasElement;
+
 const context = canvas.getContext("2d");
 
-const polygon_list = document.getElementById('polygons');
+const polygon_list = document.getElementById('polygons') as HTMLUListElement;
 
 const delete_all_button = document.getElementById('delete-all-btn');
 const creat_poly_btn = document.getElementById("creat-poly-btn");
@@ -19,14 +40,22 @@ let dots_count = 0;
 let polygons: Polygon[];
 let new_polygon: Polygon;
 
+polygons = []
+
 function clear_canvas() {
-context.clearRect(0, 0, canvas.width, canvas.height)
+  if (context) {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+  }
 }
 
 function draw_polygons() {
+  if (!context) {
+    return
+  }
+
   for (let i = 0; i < polygons.length; i++) {
     const polygon = polygons[i];
-    polygon.fill_polly();
+    polygon.fill_polly(context);
   }
 }
 
@@ -52,27 +81,24 @@ function remove_polygon(id: number) {
   }
 }
 
-function delete_all_polygons() {
-  polygon_list.innerHTML = "";
-  polygons = [];
-  polygon_count = 0;
-  dots_count = 0;
-  clear_canvas();
-}
-
 function add_to_polygon_list(polygon: Polygon) {
   polygons.push(polygon);
-
+  
   const li_polygon = document.createElement("li");
   const delete_button = document.createElement("button");
 
   delete_button.innerText = "Delete";
 
   delete_button.addEventListener("click", (event) => {
-    const closest_li = event.target.closest('li');
-    remove_polygon(closest_li.id);
-    polygon_list.removeChild(closest_li);
-    redraw_canvas();
+    const target = event.target as HTMLElement;
+    if (target) {
+      const closest_li = target.closest('li');
+      if (closest_li) {
+        remove_polygon(Number(closest_li.id));
+        polygon_list.removeChild(closest_li);
+        redraw_canvas();
+      }
+    }
   })
 
   const polygon_color = document.createElement("input");
@@ -93,6 +119,12 @@ function add_to_polygon_list(polygon: Polygon) {
   li_polygon.appendChild(polygon_color);
   li_polygon.appendChild(delete_button);
   polygon_list.appendChild(li_polygon);
+
+  polygon_count++;
+  dots_count = 0;
+  if (context) {
+    polygon.fill_polly(context);
+  }
 }
 
 function change_color(event: any) {
@@ -109,17 +141,15 @@ function change_color(event: any) {
   }
 }
 
-function paint(x:number, y:number, color:Color) {
-  context.fillStyle = color.get_rgb();
-  context.fillRect(x, y, 1, 1);
-}
-
 canvas.addEventListener("click", (event) => {
   const rect = canvas.getBoundingClientRect()
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
 
   const new_dot = new Dot(x, y);
+  if (context) {
+    new_dot.draw(context)
+  }
   if (dots_count === 0) {
     new_polygon = new Polygon(new_dot, polygon_count);
     dots_count++;
@@ -128,21 +158,20 @@ canvas.addEventListener("click", (event) => {
   
   if (dots_count !== 0) {
     new_polygon.add_dot(new_dot)
-    
     dots_count++;
   }
 });
 
-delete_all_button.addEventListener("click", (event) => {
+delete_all_button.addEventListener("click", () => {
   delete_all_polygons();
   return
 })
 
-creat_poly_btn?.addEventListener("click", (event) => {
-  if (dots_count > 3) {
-    toastr.warning('Insuficient Dots!', 'Warning');
-  } else {
+creat_poly_btn?.addEventListener("click", () => {
+  if (dots_count >= 3) {
     add_to_polygon_list(new_polygon);
+  } else {
+    notyf.error('Insufficient dots to create a polygon');
   }
   return;
 })

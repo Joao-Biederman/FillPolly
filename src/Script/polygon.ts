@@ -10,7 +10,7 @@ export class Polygon {
   vertex: Dot[];
   maxY: number;
   minY: number;
-  intersection: number[][];
+  intersection: Map<number, {x: number, color: Color}[]>;
 
   show_edge: boolean;
 
@@ -22,7 +22,7 @@ export class Polygon {
     this.maxY = Number.NEGATIVE_INFINITY;
     this.minY = Number.POSITIVE_INFINITY;
     this.add_dot(dot);
-    this.intersection = [];
+    this.intersection = new Map;
     this.show_edge = true;
   }
 
@@ -62,17 +62,27 @@ export class Polygon {
       }
 
       for (let currentY = initialY; currentY < endY; currentY++) {
-        this.intersection[currentY].push(currentX);
+        if (!this.intersection.has(currentY)) {
+          this.intersection.set(currentY, []);
+        }
+        const array = this.intersection.get(currentY);
+
+        if (array) {
+          array.push({ x: currentX, color: this.color });
+        }
+
         currentX += variation;
       }
     }
   }
 
-  draw_edges(context: any) {
-    if (this.show_edge === true) {
+  draw_edges(context: CanvasRenderingContext2D) {
+    // if (this.show_edge === true) {
+    console.log("Drawing Edges")
       const vertex_quantity = this.vertex.length; 
       for (let current_vertex = 0; current_vertex < this.vertex.length; current_vertex++) {
         const next_vertex = (current_vertex + 1) % vertex_quantity;
+        console.log("Linkng vertex ", current_vertex, " to vertex ", next_vertex);
         
         this.vertex[current_vertex];
         context.strokeStyle = this.edge_color.get_rgb();
@@ -80,10 +90,10 @@ export class Polygon {
         context.moveTo(this.vertex[current_vertex].x, this.vertex[current_vertex].y);
         context.lineTo(this.vertex[next_vertex].x, this.vertex[next_vertex].y);
       }
-    }
+    // }
   }
   
-  draw_dots(context: any) {
+  draw_dots(context: CanvasRenderingContext2D) {
     for (let i = 0; i < this.vertex.length; i++) {
       const dot = this.vertex[i];
       dot.draw(context);
@@ -91,43 +101,54 @@ export class Polygon {
   }
 
   sortIntersectionX() {
-    this.intersection.forEach((sortX) => {
-      const sortedX = sortX.slice().sort((a, b) => a.x - b.x);
-
-      sortX.splice(0, sortX.length, ...sortedX);
-    });
+    for (let i = this.minY; i < this.intersection.size; i++) {
+      const sortX = this.intersection.get(i);
+      if (sortX) {
+        const sorted = sortX.slice().sort((a, b) => a.x - b.x);
+        sortX.splice(0, sortX.length, ...sorted);
+      }
+    }
+    // this.intersection.forEach((sortX) => {
+    //   const sortedX = sortX.slice().sort((a, b) => a.x - b.x);
+    //   sortX.splice(0, sortX.length, ...sortedX);
+    // });
   }
 
-  fill_polly() {
-    // this.draw_dots();
-    // this.draw_edges();
-    // for (let y = this.minY; y < this.maxY; y++) {
-    //   this.intersection.set(y, [])
+  fill_polly(context: CanvasRenderingContext2D) {
+    console.log("Fill Polly");
+    
+    this.draw_dots(context);
+    this.draw_edges(context);
+    for (let y = this.minY; y < this.maxY; y++) {
+      this.intersection.set(y, [])
 
-    // }
-    // this.define_edges();
-    // this.sortIntersectionX();
+    }
+    this.define_edges();
+    this.sortIntersectionX();
 
-    // for (let currentY = this.minY; currentY < this.maxY; currentY++) {
-    //   const current_line = this.intersection.get(currentY);
-    //   let k = 0;
-    //   let color = current_line[k].color;
+    for (let currentY = this.minY; currentY < this.maxY; currentY++) {
+      const current_line = this.intersection.get(currentY);
+      let k = 0;
+      if (current_line) {
+        do {
+        
+          const firstX = Math.ceil(current_line[k].x);
+          const endX = Math.floor(current_line[k + 1].x);
+          
+          for (let currentX = firstX; currentX < endX; currentX++) {
+            this.polly_draw(context, currentX, currentY);
+          }
+          
+          k += 2;
+        } while (current_line[k]);
+      }
+    }
+  }
 
-    //   do {
-    //     let firstX = Math.ceil(current_line[k].x);
-    //     let endX = Math.floor(current_line[k + 1].x);
-
-    //     const variationR = (current_line[k + 1].color.r - current_line[k].color.r) / (endX - firstX);
-    //     const variationG = (current_line[k + 1].color.g - current_line[k].color.g) / (endX - firstX);
-    //     const variationB = (current_line[k + 1].color.b - current_line[k].color.b) / (endX - firstX);
-    //     for (let currentX = firstX; currentX < endX; currentX++) {
-    //       paint(currentX, currentY, color);
-    //       let newColor = { r: color.r + variationR, g: color.g + variationG, b: color.b + variationB };
-    //       color = newColor;
-    //     }
-
-    //     k += 2;
-    //   } while (current_line[k]);
-    // }
+  polly_draw(context: CanvasRenderingContext2D, x: number, y: number) {
+    console.log(context);
+    
+    context.fillStyle = this.color.get_rgb();
+    context.fillRect(x, y, 1, 1);
   }
 }

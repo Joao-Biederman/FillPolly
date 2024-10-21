@@ -1,18 +1,23 @@
 {
   "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
-    "outDir": "./js",       // Specify the output directory
-    "rootDir": "./src",     // Specify the root directory of your TypeScript files
-    "moduleResolution": "Classic",
-    "declaration":true,
-    "emitDeclarationOnly": true,
-    "allowImportingTsExtensions": true
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/**/*"],    // Include all TypeScript files in the src folder
-  "exclude": ["node_modules"]  // Exclude the node_modules folder
+  "include": ["src"]
 }
