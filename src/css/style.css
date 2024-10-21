@@ -42,14 +42,6 @@ canvas {
   display: none;
 }
 
-#delete-all-btn {
-  width: 100px;
-  height: 60px;
-  padding: 0.5em;
-  cursor: pointer
-  border: none;
-}
-
 ul {
   list-style: none;
   display: flex;
@@ -82,4 +74,20 @@ li {
 
 #delete-all-btn {
   margin: 8px;
+}
+
+.btn-div {
+  display: flex;
+  flex-direction: wrap;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+}
+
+.btn {
+  width: 100px;
+  height: 60px;
+  padding: 0.5em;
+  cursor: pointer
+  border: none;
 }

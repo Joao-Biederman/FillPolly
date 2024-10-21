@@ -1,3 +1,7 @@
+
+import toastr from 'toastr';
+import 'toastr/build/toastr.min.css';
+
 const canvas = document.getElementById('fill_polly_canvas');
 const context = canvas.getContext("2d");
 
@@ -7,10 +11,6 @@ const triangle_list = document.getElementById('triangles');
 let triangle_count = 0;
 let dots_count = 0;
 let triangles = [];
-
-function clear_canvas() {
-  context.clearRect(0, 0, canvas.width, canvas.height)
-}
 
 function random_color() {
   const r = Math.floor(Math.random() * 255);
@@ -46,6 +46,9 @@ function hexToRgb(hex) {
   } : null;
 }
 
+function clear_canvas() {
+  context.clearRect(0, 0, canvas.width, canvas.height)
+}
 
 function draw_triangles() {
   triangles.forEach(triangle => {
@@ -118,19 +121,26 @@ function add_to_triangle_list(triangle) {
   color3.addEventListener("change", change_edge)
   color3.id = triangle_count;
 
+  let polygon_show_edge = document.createElement("input");
+  polygon_show_edge.type = "checkbox";
+  polygon_show_edge.addEventListener('change', () => {
+    console.log(`Checkbox is now ${polygon_show_edge.checked ? 'checked' : 'unchecked'}`);
+  });
+
   li_triangle.setAttribute("id", triangle.id);
   li_triangle.innerHTML = `Triangle ${triangle.id}`;
   li_triangle.appendChild(color0);
   li_triangle.appendChild(color1);
   li_triangle.appendChild(color2);
   li_triangle.appendChild(color3);
+  li_triangle.appendChild(polygon_show_edge)
   li_triangle.appendChild(delete_button);
   triangle_list.appendChild(li_triangle);
 }
 
 function change_color(event) {
   triangles.forEach(triangle => {
-    if (triangle.id == event.target.id){
+    if (triangle.id === event.target.id){
       triangle.change_dot(hexToRgb(event.target.value), event.target.className);
       redraw_canvas();
       return
@@ -140,7 +150,7 @@ function change_color(event) {
 
 function change_edge(event) {
   triangles.forEach(triangle => {
-    if (triangle.id == event.target.id){
+    if (triangle.id === event.target.id){
       triangle.set_edge_color(hexToRgb(event.target.value));
       redraw_canvas();
       return
@@ -192,7 +202,7 @@ class triangle {
     if (new_dot.y < this.minY) this.minY = new_dot.y;
     new_dot.draw();
 
-    if (this.vertices.length == 3) this.fill_polly();
+    if (this.vertices.length === 3) this.fill_polly();
   }
 
   set_edge_color(color) {
@@ -212,8 +222,10 @@ class triangle {
 
   define_edges() {
     for (let i = 0; i < 3; i++) {
-      let initialY, endY;
-      let currentX, currentColor;
+      let initialY;
+      let endY;
+      let currentX;
+      let currentColor;
 
       const next_vertex = this.vertices[(i + 1) % 3];
 
@@ -260,13 +272,13 @@ class triangle {
     context.lineTo(this.vertices[2].x, this.vertices[2].y);
     context.lineTo(this.vertices[0].x, this.vertices[0].y);
     context.stroke();
-
   }
 
   draw_dots() {
-    this.vertices.forEach(dot => {
+    for (let i = 0; i < this.vertices.length; i++) {
+      const dot = this.vertices[i];
       dot.draw();
-    });
+    }
   }
 
   sortIntersectionX() {
@@ -312,11 +324,11 @@ class triangle {
 }
 
 canvas.addEventListener("click", (event) => {
-  let rect = canvas.getBoundingClientRect()
-  let x = event.clientX - rect.left;
-  let y = event.clientY - rect.top;
+  const rect = canvas.getBoundingClientRect()
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
 
-  let new_dot = new dot(x, y);
+  const new_dot = new dot(x, y);
   if (dots_count === 0) {
     new_triangle = new triangle(new_dot, triangle_count);
 
@@ -343,4 +355,13 @@ canvas.addEventListener("click", (event) => {
 delete_all_button.addEventListener("click", (event) => {
   delete_all_triangles();
   return
+})
+
+creat_poly_btn?.addEventListener("click", (event) => {
+  if (dots_count > 3) {
+    toastr.warning('Insuficient Dots!', 'Warning');
+  } else {
+    add_to_polygon_list(new_polygon);
+  }
+  return;
 })
