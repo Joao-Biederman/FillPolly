@@ -2,20 +2,49 @@ import './style.css'
 
 // biome-ignore lint/style/noNonNullAssertion: <explanation>
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-   <div class="workspace">
-        <canvas id="fill_polly_canvas" width="600" height="600"></canvas>
-        <div class="canvas_options">
-            <div class="polygons-table">
-                <ul id="polygons">
+  <button id="toggleWindow" aria-label="Toggle Specs">Alterar Especificações</button>
 
-                </ul>
-            </div>
-            <div class="btn-div">
-                <button id="delete-all-btn" class="btn">Clear canvas</button>
-                <button id="creat-poly-btn" class="btn">Create Polygon</button>
-            </div>
-        </div>
+  <div id="floatingWindow" class="floating-window" style="display: none;">
+    <div class="header">
+      <h2>Especificações do Trabalho</h2>
     </div>
+    <div class="content">
+      <p>1. Algoritmo Criado utilizando algoritmo incremental (obrigatório)</p>
+      <p>2. Qualquer tipo de poligono pode ser criado</p>
+      <p>3. Pode desenhar um ou mais poligonos na tela</p>
+      <p>4. Os poligonos podem ser selecionados clickando nos mesmo (não implementado)</p>
+      <p>5. O usuário pode selecionar um poligono e trocar sua cor (obrigatório)</p>
+      <p>6. Apenas os pixeis presentes na região interna do poligono podem ser pintados (obrigatório)</p>
+      <p>7. O usuário pode escolhar pintar ou não as arestas</p>
+      <p>8. Poligonos podem ser excluídos</p>
+    </div>
+    <div class="header">
+      <h2>Ajuda</h2>
+    </div>
+    <div class="content">
+      <ul>
+        <li>Enter: Alterar especificações e ajuda</li>
+        <li>Espaço: Criar poligono</li>
+        <li>Delete: Deletar pontos sem poligono</li>
+        <li>Shift+Delete: Deletar ùltimo </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <canvas id="fill_polly_canvas" width="600" height="600"></canvas>
+    <div class="canvas_options">
+      <div class="polygons-table">
+        <ul id="polygons">
+
+        </ul>
+      </div>
+    <div class="btn-div">
+      <button id="delete-all-btn" class="btn">Limpar Canvas</button>
+      <button id="creat-poly-btn" class="btn">Criar Poligonos</button>
+    </div>
+  </div>
+  </div>
 `
 import { Dot } from "./Script/dot.ts";
 import { Polygon } from "./Script/polygon.ts";
@@ -38,7 +67,7 @@ const creat_poly_btn = document.getElementById("creat-poly-btn");
 let polygon_count = 0;
 let dots_count = 0;
 let polygons: Polygon[];
-let new_polygon: Polygon;
+let new_polygon = new Polygon(polygon_count);
 
 polygons = []
 
@@ -49,11 +78,7 @@ function clear_canvas() {
 }
 
 function draw_polygons() {
-  if (!context) {
-    return
-  }
-
-  for (let i = 0; i < polygons.length; i++) {
+   for (let i = 0; i < polygons.length; i++) {
     const polygon = polygons[i];
     polygon.fill_polly(context);
   }
@@ -70,6 +95,9 @@ function delete_all_polygons() {
 function redraw_canvas() {
   clear_canvas();
   draw_polygons();
+  if (new_polygon.vertex.length > 0 && context) {
+    new_polygon.draw_dots(context);
+  }
 }
 
 function remove_polygon(id: number) {
@@ -101,22 +129,28 @@ function add_to_polygon_list(polygon: Polygon) {
     }
   })
 
+  console.log(polygon.color.get_rgb(), polygon.color.rgbToHex());
+
   const polygon_color = document.createElement("input");
   polygon_color.type = "color";
   polygon_color.value = polygon.color.rgbToHex();
-  polygon_color.addEventListener("change", change_color)
-  polygon_color.id = String(polygon_count);
+  polygon_color.addEventListener("change", (event) => {
+    change_color(event);
+  })
+  polygon_color.id = String(new_polygon.id);
 
   const polygon_show_edge = document.createElement("input");
   polygon_show_edge.type = "checkbox";
+  polygon_show_edge.checked = true;
   polygon_show_edge.addEventListener('change', () => {
-    console.log(`${polygon_show_edge.checked ? 'checked' : 'unchecked'}`);
     polygon.update_show_edge(polygon_show_edge.checked)
+    redraw_canvas();
   });
 
   li_polygon.setAttribute("id", String(polygon.id));
   li_polygon.innerHTML = `polygon ${polygon.id}`;
   li_polygon.appendChild(polygon_color);
+  li_polygon.appendChild(polygon_show_edge);
   li_polygon.appendChild(delete_button);
   polygon_list.appendChild(li_polygon);
 
@@ -130,12 +164,17 @@ function add_to_polygon_list(polygon: Polygon) {
 function change_color(event: any) {
   for (let i = 0; i < polygons.length; i++) {
     const polygon = polygons[i];
+    console.log(polygon.id, Number(event.target.id));
+    
     if (polygon.id === Number(event.target.id)) {
       const new_color = hexToRgb(event.target.value);
+      console.log(new_color);
+      
       if (!new_color) {
         return;
       }
       polygon.update_color(new_color);
+      redraw_canvas();
       return;
     }
   }
@@ -151,7 +190,7 @@ canvas.addEventListener("click", (event) => {
     new_dot.draw(context)
   }
   if (dots_count === 0) {
-    new_polygon = new Polygon(new_dot, polygon_count);
+    new_polygon.add_dot(new_dot)
     dots_count++;
     return;
   }
@@ -162,16 +201,81 @@ canvas.addEventListener("click", (event) => {
   }
 });
 
-delete_all_button.addEventListener("click", () => {
+delete_all_button?.addEventListener("click", () => {
   delete_all_polygons();
   return
 })
 
-creat_poly_btn?.addEventListener("click", () => {
+function check_polygon_creation() {
   if (dots_count >= 3) {
     add_to_polygon_list(new_polygon);
+    new_polygon = new Polygon(polygon_count)
   } else {
     notyf.error('Insufficient dots to create a polygon');
   }
   return;
+}
+
+function delete_last_polygon() {
+  if (polygon_count < 1) {
+    return;
+  }
+
+  const list = document.getElementById('polygons') as HTMLUListElement;
+  if (list?.lastElementChild) {
+    list.removeChild(list.lastElementChild);
+  }
+  polygons.pop();
+  redraw_canvas();
+}
+
+function delete_dots() {
+  dots_count = 0;
+  new_polygon = new Polygon(polygon_count);
+  redraw_canvas();
+}
+
+creat_poly_btn?.addEventListener("click", () => {
+  check_polygon_creation()
+})
+
+document.addEventListener("keydown", (event) => {
+  if (event.code === "Space") {
+    check_polygon_creation();
+    return;
+  }
+
+  if (event.code === "Backspace")
+  {
+    if (event.shiftKey) {
+      delete_last_polygon();
+    } else {
+      delete_dots();
+    }
+    return;
+  }
+
+  if (event.key === "Enter") {
+    toggleVisibility();
+  }
+})
+
+const floatingWindow = document.getElementById('floatingWindow') as HTMLDivElement;
+const toggleButton = document.getElementById('toggleWindow') as HTMLButtonElement;
+
+let isVisible = false;
+
+// Function to toggle visibility
+function toggleVisibility() {
+    if (isVisible) {
+        floatingWindow.style.display = "none";
+        isVisible = false;
+    } else {
+        floatingWindow.style.display = "block";
+        isVisible = true;
+    }
+}
+
+toggleButton.addEventListener('click', () => {
+  toggleVisibility();
 })

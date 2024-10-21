@@ -14,6 +14,7 @@
     "vite": "^5.4.8"
   },
   "dependencies": {
-    "notyf": "^3.10.0"
+    "notyf": "^3.10.0",
+    "tippy.js": "^6.3.7"
   }
 }

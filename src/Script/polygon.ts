@@ -14,20 +14,26 @@ export class Polygon {
 
   show_edge: boolean;
 
-  constructor(dot: Dot, id: number){
+  constructor(id: number){
     this.id = id;
     this.edge_color = new Color(255, 255, 0)
     this.color = random_color();
     this.vertex = [];
     this.maxY = Number.NEGATIVE_INFINITY;
     this.minY = Number.POSITIVE_INFINITY;
-    this.add_dot(dot);
     this.intersection = new Map;
     this.show_edge = true;
   }
 
   add_dot(dot: Dot){
     this.vertex.push(dot)
+    if (dot.y > this.maxY) {
+      this.maxY = dot.y;
+    }
+
+    if (dot.y < this.minY) {
+      this.minY = dot.y;
+    }
   }
 
   update_show_edge(state : boolean) {
@@ -77,20 +83,20 @@ export class Polygon {
   }
 
   draw_edges(context: CanvasRenderingContext2D) {
-    // if (this.show_edge === true) {
-    console.log("Drawing Edges")
+    if (this.show_edge === true) {
       const vertex_quantity = this.vertex.length; 
       for (let current_vertex = 0; current_vertex < this.vertex.length; current_vertex++) {
         const next_vertex = (current_vertex + 1) % vertex_quantity;
-        console.log("Linkng vertex ", current_vertex, " to vertex ", next_vertex);
         
         this.vertex[current_vertex];
         context.strokeStyle = this.edge_color.get_rgb();
         context.beginPath();
         context.moveTo(this.vertex[current_vertex].x, this.vertex[current_vertex].y);
         context.lineTo(this.vertex[next_vertex].x, this.vertex[next_vertex].y);
+        context.stroke(); // Draw the line
+        context.closePath(); // Close the path (optional)
       }
-    // }
+    }
   }
   
   draw_dots(context: CanvasRenderingContext2D) {
@@ -101,7 +107,7 @@ export class Polygon {
   }
 
   sortIntersectionX() {
-    for (let i = this.minY; i < this.intersection.size; i++) {
+    for (let i = this.minY; i < this.maxY; i++) {
       const sortX = this.intersection.get(i);
       if (sortX) {
         const sorted = sortX.slice().sort((a, b) => a.x - b.x);
@@ -115,27 +121,26 @@ export class Polygon {
   }
 
   fill_polly(context: CanvasRenderingContext2D) {
-    console.log("Fill Polly");
     
     this.draw_dots(context);
     this.draw_edges(context);
     for (let y = this.minY; y < this.maxY; y++) {
       this.intersection.set(y, [])
-
     }
+
     this.define_edges();
     this.sortIntersectionX();
-
+    
     for (let currentY = this.minY; currentY < this.maxY; currentY++) {
       const current_line = this.intersection.get(currentY);
-      let k = 0;
       if (current_line) {
+        let k = 0;
         do {
-        
+          
           const firstX = Math.ceil(current_line[k].x);
           const endX = Math.floor(current_line[k + 1].x);
           
-          for (let currentX = firstX; currentX < endX; currentX++) {
+          for (let currentX = firstX; currentX < endX; currentX++) {            
             this.polly_draw(context, currentX, currentY);
           }
           
@@ -145,9 +150,7 @@ export class Polygon {
     }
   }
 
-  polly_draw(context: CanvasRenderingContext2D, x: number, y: number) {
-    console.log(context);
-    
+  polly_draw(context: CanvasRenderingContext2D, x: number, y: number) {   
     context.fillStyle = this.color.get_rgb();
     context.fillRect(x, y, 1, 1);
   }

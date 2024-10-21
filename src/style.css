@@ -57,14 +57,16 @@ ul {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: left;
+  gap: 8px;
   padding: 0;
 }
 
 li {
-  display: grid;
-  grid-template-columns: 100px 100px 100px 100px 100px 100px;
+  display: flex;
+  gap: 12px;
   align-items: center;
+  justify-content: center;
 }
 
 .workspace {
@@ -173,4 +175,19 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+.floating-window {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 300px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background-color: #242424;
+  transition: all 0.3s ease;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
