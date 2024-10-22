@@ -78,9 +78,11 @@ function clear_canvas() {
 }
 
 function draw_polygons() {
-   for (let i = 0; i < polygons.length; i++) {
-    const polygon = polygons[i];
-    polygon.fill_polly(context);
+  if (context){
+    for (let i = 0; i < polygons.length; i++) {
+      const polygon = polygons[i];
+      polygon.fill_polly(context);
+    }
   }
 }
 
@@ -135,7 +137,14 @@ function add_to_polygon_list(polygon: Polygon) {
   polygon_color.type = "color";
   polygon_color.value = polygon.color.rgbToHex();
   polygon_color.addEventListener("change", (event) => {
-    change_color(event);
+    const target = event?.target as HTMLInputElement;
+    const new_color = hexToRgb(target.value);
+    if (!new_color) {
+      return;
+    }
+    polygon.update_color(new_color);
+    redraw_canvas();
+    return;
   })
   polygon_color.id = String(new_polygon.id);
 
@@ -158,25 +167,6 @@ function add_to_polygon_list(polygon: Polygon) {
   dots_count = 0;
   if (context) {
     polygon.fill_polly(context);
-  }
-}
-
-function change_color(event: any) {
-  for (let i = 0; i < polygons.length; i++) {
-    const polygon = polygons[i];
-    console.log(polygon.id, Number(event.target.id));
-    
-    if (polygon.id === Number(event.target.id)) {
-      const new_color = hexToRgb(event.target.value);
-      console.log(new_color);
-      
-      if (!new_color) {
-        return;
-      }
-      polygon.update_color(new_color);
-      redraw_canvas();
-      return;
-    }
   }
 }
 
